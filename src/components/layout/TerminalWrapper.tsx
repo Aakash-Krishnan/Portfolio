@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { ResumeLink } from "@/lib/resume";
+import type { PortfolioNavLink } from "@/types/portfolio";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -20,7 +22,15 @@ const BOOT_LINES = [
 
 type Phase = "booting" | "revealing" | "expanding" | "ready";
 
-export default function TerminalWrapper({ children }: { children: React.ReactNode }) {
+export default function TerminalWrapper({
+  children,
+  navLinks,
+  resume,
+}: {
+  children: React.ReactNode;
+  navLinks: PortfolioNavLink[];
+  resume: ResumeLink | null;
+}) {
   const terminalRef      = useRef<HTMLDivElement>(null);
   const bootRef          = useRef<HTMLDivElement>(null);
   const contentRef       = useRef<HTMLDivElement>(null);
@@ -30,11 +40,61 @@ export default function TerminalWrapper({ children }: { children: React.ReactNod
   const linesRef         = useRef<(HTMLDivElement | null)[]>([]);
   const titlebarRef      = useRef<HTMLDivElement>(null);
   const navRef           = useRef<HTMLDivElement>(null);
+  const drawerRef        = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState<Phase>("booting");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Close drawer on Escape key
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   useEffect(() => {
     const el = terminalRef.current;
     if (!el) return;
+
+    // Skip boot animation if user prefers reduced motion — jump straight to ready
+    if (prefersReducedMotion) {
+      gsap.set(el, {
+        xPercent: 0, yPercent: 0, top: 0, left: 0,
+        width: "100vw", height: "100vh", borderRadius: 0,
+        borderColor: "transparent", opacity: 1,
+      });
+      if (contentRef.current) gsap.set(contentRef.current, { opacity: 1, height: "calc(100vh - 72px)" });
+      if (titlebarRef.current) gsap.set(titlebarRef.current, { height: 72 });
+      requestAnimationFrame(() => {
+        setPhase("ready");
+        ScrollTrigger.refresh();
+        const scroller = document.getElementById("terminal-scroll");
+        if (scroller) scroller.dataset.ready = "true";
+        window.dispatchEvent(new CustomEvent("terminal-ready"));
+      });
+      return;
+    }
 
     gsap.set(el, {
       xPercent: -50,
@@ -129,11 +189,11 @@ export default function TerminalWrapper({ children }: { children: React.ReactNod
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [prefersReducedMotion]);
 
   // Fade content in once it mounts during "revealing"
   useEffect(() => {
-    if (phase !== "revealing" || !contentRef.current) return;
+    if (phase !== "revealing" || !contentRef.current || prefersReducedMotion) return;
     const terminalWidth = Math.min(window.innerWidth * 0.88, 560);
     const previewScale = terminalWidth / window.innerWidth;
     // Set content to full viewport width so scaling fills the terminal exactly
@@ -142,23 +202,31 @@ export default function TerminalWrapper({ children }: { children: React.ReactNod
       { opacity: 0, y: 24, scale: previewScale },
       { opacity: 1, y: 0,  scale: previewScale, duration: 0.55, ease: "power2.out", delay: 0.1 }
     );
-  }, [phase]);
+  }, [phase, prefersReducedMotion]);
 
   // Nav stagger after expansion
   useEffect(() => {
-    if (phase !== "ready" || !navRef.current) return;
+    if (phase !== "ready" || !navRef.current || prefersReducedMotion) return;
     const items = navRef.current.children;
     gsap.fromTo(items,
       { opacity: 0, y: -8 },
       { opacity: 1, y: 0, duration: 0.4, stagger: 0.07, ease: "power2.out", delay: 0.1 }
     );
-  }, [phase]);
+  }, [phase, prefersReducedMotion]);
+
+  // Focus first drawer link when opened
+  useEffect(() => {
+    if (!menuOpen || !drawerRef.current) return;
+    const firstLink = drawerRef.current.querySelector<HTMLElement>("a, button");
+    firstLink?.focus();
+  }, [menuOpen]);
 
   return (
     <>
       {/* Dark bg visible while terminal is small */}
       {phase === "booting" && (
         <div
+          aria-hidden="true"
           className="fixed inset-0 z-[98]"
           style={{
             background:
@@ -187,47 +255,63 @@ export default function TerminalWrapper({ children }: { children: React.ReactNod
             : "none",
         }}
       >
-        {/* Titlebar */}
+        {/* Titlebar — acts as the site header/nav */}
         <div
           ref={titlebarRef}
           className="flex items-center gap-2 px-4 shrink-0 border-b border-border"
           style={{ height: 44, backgroundColor: "rgba(17,24,39,0.9)", backdropFilter: "blur(8px)" }}
         >
-          <div ref={trafficLightsRef} className="flex items-center gap-2">
+          <div ref={trafficLightsRef} className="flex items-center gap-2" aria-hidden="true">
             <span className="w-3 h-3 rounded-full bg-red-500/70 cursor-pointer" />
             <span className="w-3 h-3 rounded-full bg-yellow-500/70 cursor-pointer" />
             <span className="w-3 h-3 rounded-full bg-primary/70 cursor-pointer" />
           </div>
-          <span ref={labelRef} className="ml-3 font-mono text-muted select-none">
+          <span ref={labelRef} className="ml-3 font-mono text-muted select-none" aria-hidden="true">
             sky@macbook — zsh
           </span>
 
-          {phase === "ready" && (
-            <div ref={navRef} className="ml-auto flex items-center gap-5 pr-2" style={{ fontSize: "0.875rem" }}>
-              {["Work", "Projects", "Skills", "Contact"].map((item) => (
+          {phase === "ready" && !isMobile && (
+            <nav ref={navRef} aria-label="Site navigation" className="ml-auto flex items-center gap-5 pr-2" style={{ fontSize: "0.875rem" }}>
+              {navLinks.map(({ label, href }) => (
                 <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
+                  key={href}
+                  href={href}
                   className="font-mono text-muted hover:text-primary transition-colors duration-200"
                 >
-                  {item}
+                  {label}
                 </a>
               ))}
-              <a
-                href="/resume.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono px-3 py-1 border border-primary/50 text-primary rounded hover:bg-primary hover:text-background transition-colors duration-200"
-              >
-                Resume
-              </a>
-            </div>
+              {resume && (
+                <a
+                  href={resume.href}
+                  download={resume.fileName}
+                  className="font-mono px-3 py-1 border border-primary/50 text-primary rounded hover:bg-primary hover:text-background transition-colors duration-200"
+                >
+                  Resume
+                  <span className="sr-only">(download {resume.fileName})</span>
+                </a>
+              )}
+            </nav>
+          )}
+
+          {phase === "ready" && isMobile && (
+            <button
+              className="ml-auto mr-2 flex flex-col justify-center items-center gap-1.5 w-8 h-8 text-muted hover:text-primary transition-colors"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav-drawer"
+            >
+              <span className={`block h-px w-5 bg-current transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[7px]" : ""}`} aria-hidden="true" />
+              <span className={`block h-px w-5 bg-current transition-all duration-300 ${menuOpen ? "opacity-0" : ""}`} aria-hidden="true" />
+              <span className={`block h-px w-5 bg-current transition-all duration-300 origin-center ${menuOpen ? "-rotate-45 translate-y-[-7px]" : ""}`} aria-hidden="true" />
+            </button>
           )}
         </div>
 
-        {/* Boot sequence */}
+        {/* Boot sequence — decorative, aria-hidden from screen readers */}
         {phase === "booting" && (
-          <div ref={bootRef} className="p-6 font-mono text-sm space-y-1.5">
+          <div ref={bootRef} className="p-6 font-mono text-sm space-y-1.5" aria-hidden="true">
             {BOOT_LINES.map((line, i) => (
               <div
                 key={i}
@@ -247,6 +331,56 @@ export default function TerminalWrapper({ children }: { children: React.ReactNod
               <span ref={cursorRef} className="inline-block w-2.5 h-[1em] bg-primary align-middle" />
             </div>
           </div>
+        )}
+
+        {/* Mobile sidebar drawer */}
+        {phase === "ready" && isMobile && (
+          <>
+            {/* Backdrop */}
+            <div
+              aria-hidden="true"
+              className={`absolute inset-0 z-40 bg-black/50 transition-opacity duration-300 ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+              onClick={() => setMenuOpen(false)}
+            />
+            {/* Drawer */}
+            <div
+              ref={drawerRef}
+              id="mobile-nav-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Site navigation"
+              className={`absolute top-0 right-0 h-full w-64 z-50 bg-background border-l border-border flex flex-col pt-16 px-6 pb-8 gap-6 transition-transform duration-300 ease-in-out ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
+            >
+              <p className="font-mono text-xs text-muted/50 tracking-widest uppercase mb-2" aria-hidden="true">Navigation</p>
+              <nav aria-label="Mobile site navigation">
+                <ul className="flex flex-col gap-6">
+                  {navLinks.map(({ label, href }) => (
+                    <li key={href}>
+                      <a
+                        href={href}
+                        onClick={() => setMenuOpen(false)}
+                        className="text-sm text-muted hover:text-primary transition-colors duration-200 font-mono"
+                      >
+                        <span className="text-primary/50 mr-2" aria-hidden="true">~/</span>{label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+              {resume && (
+                <div className="mt-auto">
+                  <a
+                    href={resume.href}
+                    download={resume.fileName}
+                    className="text-sm font-mono px-4 py-1.5 border border-primary text-primary rounded hover:bg-primary hover:text-background transition-all duration-200 block text-center"
+                  >
+                    Resume
+                    <span className="sr-only">(download {resume.fileName})</span>
+                  </a>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {/* Portfolio content — mounts on revealing, stays through ready */}
