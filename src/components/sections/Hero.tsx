@@ -114,7 +114,7 @@ export default function Hero({
     <section
       id="hero"
       aria-labelledby="hero-heading"
-      className="min-h-screen flex flex-col justify-center px-8 md:px-16 lg:px-24 relative overflow-hidden"
+      className="min-h-screen flex flex-col justify-center max-md:justify-between max-md:pt-20 max-md:pb-4 px-8 md:px-16 lg:px-24 relative overflow-hidden"
     >
       <MotionGrid />
       <MotionGlow />
@@ -276,7 +276,10 @@ function MotionMarquee({
   setPaused: (v: boolean) => void;
 }) {
   return (
-    <div className="absolute bottom-0 left-0 right-0" aria-hidden="true">
+    <div
+      className="relative mt-12 w-full shrink-0 md:absolute md:bottom-0 md:left-0 md:right-0 md:mt-0"
+      aria-hidden="true"
+    >
       <div className="w-full h-px bg-border" />
       <div
         className="relative overflow-hidden py-5"

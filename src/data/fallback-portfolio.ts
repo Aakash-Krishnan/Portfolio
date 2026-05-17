@@ -17,9 +17,17 @@ export const fallbackPortfolio: PortfolioData = {
       "I'm Sky — a Senior Web Developer based in Chennai, India. Currently the sole frontend engineer at SuperOps.ai, where I own everything from architecture decisions to AWS deployments. I don't wait for AI tools to become mainstream — I ship them.",
     contactIntro:
       "If you're building something worth caring about — reach out. I reply fast.",
-    footerLine1: "Built by Sky — with Next.js, Tailwind, GSAP, and too much chai.",
+    footerLine1:
+      "Built by Sky — with Next.js, Tailwind, GSAP, headless CMS, and too much vibing.",
     footerLine2: "No templates were harmed in the making of this portfolio.",
     resumeUrl: "/resume.pdf",
+    aboutPhoto: {
+      url: "https://ap-south-1.graphassets.com/cmox2ikvb04p307o19gcxhjp7/output=format:webp/cmp9bluch4f2o07oaeau64kje",
+      fileName: "aakash-krishnan-s.jpg",
+      mimeType: "image/jpeg",
+      width: 1883,
+      height: 2181,
+    },
     openToWork: true,
     avgResponse: "< 2 hours",
     lookingFor: "Product companies that care about craft",
@@ -74,11 +82,12 @@ export const fallbackPortfolio: PortfolioData = {
       },
     ],
     navLinks: [
-      { label: "Work", href: "#experience", sortOrder: 0 },
-      { label: "About", href: "#about", sortOrder: 1 },
-      { label: "Skills", href: "#skills", sortOrder: 2 },
-      { label: "Projects", href: "#projects", sortOrder: 3 },
-      { label: "Contact", href: "#contact", sortOrder: 4 },
+      { label: "About", href: "#about", sortOrder: 0 },
+      { label: "Work", href: "#experience", sortOrder: 1 },
+      { label: "Achievements", href: "#achievements", sortOrder: 2 },
+      { label: "Skills", href: "#skills", sortOrder: 3 },
+      { label: "Projects", href: "#projects", sortOrder: 4 },
+      { label: "Contact", href: "#contact", sortOrder: 5 },
     ],
     contactLinks: [
       {
@@ -241,6 +250,55 @@ export const fallbackPortfolio: PortfolioData = {
       ],
     },
   ],
+  achievements: [
+    {
+      title: "Proactive Asset Monitoring with Predictive Analytics",
+      event: "SuperOps Hackathon 2025",
+      placement: "Runner-up",
+      description:
+        "Hackathon concept for MSPs: AI-driven predictive monitoring across CPU, memory, disk, and network—forecasting threshold breaches days before reactive RMM alerts fire. Multi-metric health scores, proactive recommendations, automation hooks, and trend dashboards for SLA and capacity planning.",
+      highlight:
+        "Predictive analytics · Multi-metric forecasting · MSP operations",
+      topics: [
+        "Predictive analytics",
+        "Time-series forecasting",
+        "AI/ML",
+        "RMM",
+        "MSP operations",
+        "SuperOps platform",
+      ],
+      certificateUrl: "/achievements/superhack-2025-runner.png",
+      certificateUrls: null,
+      sortOrder: 0,
+    },
+    {
+      title: "Master in Full Stack Development",
+      event: "Scaler Academy · Aug 2023 – Jun 2025",
+      placement: "5 Skill Mastery certifications",
+      description:
+        "22-month program building production-ready full stack depth—structured modules across core web fundamentals through modern frontend and cloud. Cleared Skill Mastery assessments in JavaScript, DSA, MERN, React, and SQL.",
+      highlight: "TypeScript · React · Next.js · AWS · MERN · SQL",
+      topics: [
+        "TypeScript",
+        "React",
+        "Next.js",
+        "AWS",
+        "JavaScript",
+        "DSA",
+        "MERN",
+        "SQL",
+      ],
+      certificateUrl: null,
+      certificateUrls: [
+        "/achievements/scaler/javascript.png",
+        "/achievements/scaler/dsa.png",
+        "/achievements/scaler/mern.png",
+        "/achievements/scaler/react.png",
+        "/achievements/scaler/sql.png",
+      ],
+      sortOrder: 1,
+    },
+  ],
   projects: [
     {
       name: "AI Content Studio",
@@ -277,6 +335,18 @@ export const fallbackPortfolio: PortfolioData = {
       liveUrl: null,
       isInternal: false,
       sortOrder: 2,
+    },
+    {
+      name: "Kanban Clone",
+      organization: "Personal Project · Learning build",
+      description:
+        "Vanilla JS Kanban board built to understand how React thinks—without React. Updates hit only the DOM nodes that actually changed, so repaint and reflow stay minimal instead of re-rendering the whole app on every tiny move. Drag-and-drop tasks, search, and spinning up new boards when you need a fresh lane.",
+      highlight: "Surgical DOM updates · Drag & drop · Search · Multi-board",
+      stack: ["JavaScript", "HTML", "CSS", "DOM API", "Vercel"],
+      githubUrl: "https://github.com/Aakash-Krishnan/kanban-clone",
+      liveUrl: "https://kanban-clone-blue.vercel.app",
+      isInternal: false,
+      sortOrder: 3,
     },
   ],
 };

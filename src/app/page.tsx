@@ -4,6 +4,7 @@ import About from "@/components/sections/About";
 import Experience from "@/components/sections/Experience";
 import Skills from "@/components/sections/Skills";
 import Projects from "@/components/sections/Projects";
+import Achievements from "@/components/sections/Achievements";
 import Contact from "@/components/sections/Contact";
 import { getPortfolioData } from "@/lib/portfolio";
 import { getResumeLink } from "@/lib/resume";
@@ -18,6 +19,7 @@ export default async function Home() {
         <Hero site={portfolio.site} resume={resume} />
         <About site={portfolio.site} />
         <Experience experiences={portfolio.experiences} />
+        <Achievements achievements={portfolio.achievements} />
         <Skills site={portfolio.site} categories={portfolio.skillCategories} />
         <Projects projects={portfolio.projects} />
         <Contact site={portfolio.site} />

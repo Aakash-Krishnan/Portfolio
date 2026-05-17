@@ -12,6 +12,15 @@ const customVaultPath = process.env.RESUME_VAULT_PATH
   : null;
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "ap-south-1.graphassets.com",
+        pathname: "/cmox2ikvb04p307o19gcxhjp7/**",
+      },
+    ],
+  },
   async redirects() {
     if (customVaultPath && customVaultPath !== INTERNAL_VAULT_PATH) {
       return [

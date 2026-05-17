@@ -225,12 +225,18 @@ function MotionContactInner({
         </div>
       </div>
 
-      <div className="mt-20 text-center font-mono text-sm text-muted/50">
+      <a
+        href="https://github.com/Aakash-Krishnan/Portfolio"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-20 block text-center font-mono text-sm text-muted/50 transition-colors duration-200 hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-md"
+        aria-label="View portfolio source code on GitHub (opens in new tab)"
+      >
         <p>{site.footerLine1}</p>
         <p className="mt-1">
           <span className="text-primary/40">&#9658;</span> {site.footerLine2}
         </p>
-      </div>
+      </a>
     </div>
   );
 }

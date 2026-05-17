@@ -21,6 +21,13 @@ export const PORTFOLIO_QUERY = /* GraphQL */ `
         mimeType
         size
       }
+      aboutPhoto {
+        url
+        fileName
+        mimeType
+        width
+        height
+      }
       openToWork
       avgResponse
       lookingFor
@@ -96,6 +103,24 @@ export const PORTFOLIO_QUERY = /* GraphQL */ `
         text
         sortOrder
       }
+    }
+    achievements(stage: PUBLISHED, orderBy: sortOrder_ASC, first: 50) {
+      title
+      event
+      placement
+      description
+      highlight
+      topics
+      certificateUrl
+      certificateUrls
+      certificates {
+        url
+        fileName
+        mimeType
+        width
+        height
+      }
+      sortOrder
     }
     projects(stage: PUBLISHED, orderBy: sortOrder_ASC, first: 50) {
       name

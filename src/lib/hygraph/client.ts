@@ -7,8 +7,14 @@ interface PortfolioQueryResponse {
   allSiteSettings: PortfolioData["site"][];
   skillCategories: PortfolioData["skillCategories"];
   experiences: PortfolioData["experiences"];
+  achievements: PortfolioData["achievements"];
   projects: PortfolioData["projects"];
 }
+
+/** Shown in Achievements — hide from Projects when CMS entry still exists. */
+const PROJECTS_EXCLUDED_FROM_SHIPPED = new Set([
+  "Proactive Asset Monitoring",
+]);
 
 export async function fetchPortfolio(
   slug = "main",
@@ -51,10 +57,15 @@ export async function fetchPortfolio(
   const site = json.data?.allSiteSettings?.[0];
   if (!site) return null;
 
+  const projects = (json.data?.projects ?? []).filter(
+    (project) => !PROJECTS_EXCLUDED_FROM_SHIPPED.has(project.name),
+  );
+
   return {
     site,
     skillCategories: json.data?.skillCategories ?? [],
     experiences: json.data?.experiences ?? [],
-    projects: json.data?.projects ?? [],
+    achievements: json.data?.achievements ?? [],
+    projects,
   };
 }

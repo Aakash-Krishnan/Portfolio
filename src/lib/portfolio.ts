@@ -1,8 +1,28 @@
 import { fetchPortfolio } from "@/lib/hygraph/client";
-import type { PortfolioData } from "@/types/portfolio";
+import type { PortfolioData, PortfolioNavLink } from "@/types/portfolio";
 
 function sortByOrder<T extends { sortOrder: number }>(items: T[]): T[] {
   return [...items].sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+/** Ensures Achievements nav exists until Site Settings is updated in Hygraph Studio. */
+function withAchievementsNav(links: PortfolioNavLink[]): PortfolioNavLink[] {
+  const sorted = sortByOrder(links);
+  if (sorted.some((link) => link.href === "#achievements")) {
+    return sorted;
+  }
+
+  const achievementsLink: PortfolioNavLink = {
+    label: "Achievements",
+    href: "#achievements",
+    sortOrder: 2,
+  };
+
+  const reindexed = sorted.map((link) =>
+    link.sortOrder >= 2 ? { ...link, sortOrder: link.sortOrder + 1 } : link,
+  );
+
+  return sortByOrder([...reindexed, achievementsLink]);
 }
 
 function normalize(data: PortfolioData): PortfolioData {
@@ -11,7 +31,7 @@ function normalize(data: PortfolioData): PortfolioData {
       ...data.site,
       heroStats: sortByOrder(data.site.heroStats),
       aboutStats: sortByOrder(data.site.aboutStats),
-      navLinks: sortByOrder(data.site.navLinks),
+      navLinks: withAchievementsNav(data.site.navLinks),
       contactLinks: sortByOrder(data.site.contactLinks),
       statusLines: sortByOrder(data.site.statusLines),
     },
@@ -23,6 +43,7 @@ function normalize(data: PortfolioData): PortfolioData {
       ...experience,
       points: sortByOrder(experience.points),
     })),
+    achievements: sortByOrder(data.achievements),
     projects: sortByOrder(data.projects),
   };
 }

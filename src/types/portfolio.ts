@@ -41,6 +41,8 @@ export interface PortfolioAsset {
   fileName: string;
   mimeType?: string | null;
   size?: number | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface PortfolioSiteSettings {
@@ -59,6 +61,7 @@ export interface PortfolioSiteSettings {
   footerLine2: string;
   resumeUrl: string;
   resume?: PortfolioAsset | null;
+  aboutPhoto?: PortfolioAsset | null;
   openToWork: boolean;
   avgResponse: string;
   lookingFor: string;
@@ -126,9 +129,23 @@ export interface PortfolioProject {
   sortOrder: number;
 }
 
+export interface PortfolioAchievement {
+  title: string;
+  event: string;
+  placement: string;
+  description: string;
+  highlight: string;
+  topics: string[];
+  certificateUrl?: string | null;
+  certificateUrls?: string[] | null;
+  certificates?: PortfolioAsset[] | null;
+  sortOrder: number;
+}
+
 export interface PortfolioData {
   site: PortfolioSiteSettings;
   skillCategories: PortfolioSkillCategory[];
   experiences: PortfolioExperience[];
+  achievements: PortfolioAchievement[];
   projects: PortfolioProject[];
 }
