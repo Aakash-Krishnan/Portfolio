@@ -225,11 +225,12 @@ function MotionCtas({
       {resume && (
         <a
           href={resume.href}
-          download={resume.fileName}
+          target="_blank"
+          rel="noopener noreferrer"
           className="font-mono text-sm text-muted hover:text-primary transition-colors duration-200 underline underline-offset-4"
         >
-          Resume<span aria-hidden="true"> ↓</span>
-          <span className="sr-only">(download {resume.fileName})</span>
+          Resume<span aria-hidden="true"> ↗</span>
+          <span className="sr-only">(opens {resume.fileName} in a new tab)</span>
         </a>
       )}
     </div>

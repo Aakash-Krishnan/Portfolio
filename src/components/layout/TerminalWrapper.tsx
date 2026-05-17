@@ -284,11 +284,12 @@ export default function TerminalWrapper({
               {resume && (
                 <a
                   href={resume.href}
-                  download={resume.fileName}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="font-mono px-3 py-1 border border-primary/50 text-primary rounded hover:bg-primary hover:text-background transition-colors duration-200"
                 >
                   Resume
-                  <span className="sr-only">(download {resume.fileName})</span>
+                  <span className="sr-only">(opens {resume.fileName} in a new tab)</span>
                 </a>
               )}
             </nav>
@@ -371,11 +372,12 @@ export default function TerminalWrapper({
                 <div className="mt-auto">
                   <a
                     href={resume.href}
-                    download={resume.fileName}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-sm font-mono px-4 py-1.5 border border-primary text-primary rounded hover:bg-primary hover:text-background transition-all duration-200 block text-center"
                   >
                     Resume
-                    <span className="sr-only">(download {resume.fileName})</span>
+                    <span className="sr-only">(opens {resume.fileName} in a new tab)</span>
                   </a>
                 </div>
               )}

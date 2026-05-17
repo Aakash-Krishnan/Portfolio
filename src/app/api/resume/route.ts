@@ -27,7 +27,7 @@ export async function GET() {
   return new Response(body, {
     headers: {
       "Content-Type": upstream.headers.get("content-type") ?? "application/pdf",
-      "Content-Disposition": `attachment; filename="${fileName}"`,
+      "Content-Disposition": `inline; filename="${fileName}"`,
       "Cache-Control": "no-store",
     },
   });

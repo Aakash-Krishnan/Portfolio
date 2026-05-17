@@ -18,7 +18,7 @@ export function getResumeLink(site: PortfolioSiteSettings): ResumeLink | null {
   return null;
 }
 
-/** Direct Hygraph or fallback URL — used by the download API route. */
+/** Direct Hygraph or fallback URL — proxied by /api/resume for in-browser viewing. */
 export function getResumeSourceUrl(site: PortfolioSiteSettings): string | null {
   return site.resume?.url ?? site.resumeUrl ?? null;
 }
