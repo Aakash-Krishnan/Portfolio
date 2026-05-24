@@ -47,20 +47,27 @@ export default function Projects({
     return () => observer.disconnect();
   }, []);
 
+  const rafRef = useRef<number | null>(null);
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const rotateX =
-      ((e.clientY - rect.top - rect.height / 2) / (rect.height / 2)) * -6;
-    const rotateY =
-      ((e.clientX - rect.left - rect.width / 2) / (rect.width / 2)) * 6;
-    gsap.to(card, {
-      rotateX,
-      rotateY,
-      duration: 0.3,
-      ease: "power2.out",
-      transformPerspective: 800,
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      const rect = card.getBoundingClientRect();
+      const rotateX =
+        ((clientY - rect.top - rect.height / 2) / (rect.height / 2)) * -6;
+      const rotateY =
+        ((clientX - rect.left - rect.width / 2) / (rect.width / 2)) * 6;
+      gsap.to(card, {
+        rotateX,
+        rotateY,
+        duration: 0.3,
+        ease: "power2.out",
+        transformPerspective: 800,
+      });
     });
   };
 
