@@ -32,7 +32,7 @@ export async function fetchPortfolio(
       query: PORTFOLIO_QUERY,
       variables: { slug },
     }),
-    next: { revalidate: 60, tags: ["portfolio"] },
+    next: { revalidate: 60 * 60 * 24, tags: ["portfolio"] },
   });
 
   if (!response.ok) {
