@@ -1,5 +1,24 @@
 import type { NextConfig } from "next";
 
+// GTM requires unsafe-inline — nonce-based approach needs server-side tagging infra
+const cspHeader = [
+  `default-src 'self'`,
+  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com`,
+  `style-src 'self' 'unsafe-inline'`,
+  // next/font/google downloads fonts at build time → served from self, no googleapis needed
+  `font-src 'self'`,
+  // Hygraph is server-side only; only GA/GTM endpoints needed client-side
+  `connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net`,
+  `img-src 'self' data: https://ap-south-1.graphassets.com`,
+  // GTM noscript iframe fallback
+  `frame-src https://www.googletagmanager.com`,
+  `object-src 'none'`,
+  `base-uri 'self'`,
+  `form-action 'self'`,
+  `frame-ancestors 'none'`,
+  `upgrade-insecure-requests`,
+].join("; ");
+
 const INTERNAL_VAULT_PATH = "/vault/resume";
 
 function normalizePath(path: string): string {
@@ -13,6 +32,8 @@ const customVaultPath = process.env.RESUME_VAULT_PATH
 
 const nextConfig: NextConfig = {
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     remotePatterns: [
       {
         protocol: "https",
@@ -20,6 +41,19 @@ const nextConfig: NextConfig = {
         pathname: "/cmox2ikvb04p307o19gcxhjp7/**",
       },
     ],
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: cspHeader,
+          },
+        ],
+      },
+    ];
   },
   async redirects() {
     if (customVaultPath && customVaultPath !== INTERNAL_VAULT_PATH) {
