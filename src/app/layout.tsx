@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { buildPortfolioMetadata } from "@/components/meta/portfolio-metadata";
 import { fetchPortfolio } from "@/lib/hygraph/client";
 import "./globals.css";
@@ -36,6 +37,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      {process.env.NEXT_PUBLIC_GTM_ID && (
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+      )}
       <body className="min-h-full bg-background text-text overflow-hidden">
         <a
           href="#main-content"
