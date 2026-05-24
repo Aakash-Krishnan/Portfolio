@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { GoogleTagManager } from "@next/third-parties/google";
+import { GoogleTagManager, GoogleAnalytics } from "@next/third-parties/google";
 import { buildPortfolioMetadata } from "@/components/meta/portfolio-metadata";
 import { fetchPortfolio } from "@/lib/hygraph/client";
 import "./globals.css";
@@ -39,6 +39,9 @@ export default function RootLayout({
     >
       {process.env.NEXT_PUBLIC_GTM_ID && (
         <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+      )}
+      {process.env.NEXT_PUBLIC_GA_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       )}
       <body className="min-h-full bg-background text-text overflow-hidden">
         <a
