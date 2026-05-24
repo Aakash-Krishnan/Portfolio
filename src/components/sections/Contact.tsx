@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 import type { PortfolioSiteSettings } from "@/types/portfolio";
 
 const LINK_ICONS: Record<string, React.ReactNode> = {
@@ -61,55 +61,61 @@ export default function Contact({ site }: { site: PortfolioSiteSettings }) {
     const prefersReducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (!prefersReducedMotion) gsap.set(content, { opacity: 0, y: 40 });
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
+    let observer: IntersectionObserver | undefined;
 
-        if (prefersReducedMotion) {
-          gsap.set(content, { opacity: 1, y: 0 });
-          gsap.set(statusLineRefs.current.filter(Boolean), {
-            opacity: 1,
-            x: 0,
-          });
-          gsap.set(cardsRef.current.filter(Boolean), { opacity: 1, y: 0 });
-          return;
-        }
+    loadGsap().then((gsap) => {
+      if (!prefersReducedMotion) gsap.set(content, { opacity: 0, y: 40 });
 
-        const tl = gsap.timeline();
-        tl.to(content, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" });
-        tl.fromTo(
-          statusLineRefs.current.filter(Boolean),
-          { opacity: 0, x: -8 },
-          {
-            opacity: 1,
-            x: 0,
-            duration: 0.2,
-            stagger: 0.07,
-            ease: "power2.out",
-          },
-          "-=0.2",
-        );
-        tl.fromTo(
-          cardsRef.current.filter(Boolean),
-          { opacity: 0, y: 16 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.35,
-            stagger: 0.1,
-            ease: "power2.out",
-          },
-          "-=0.3",
-        );
-      },
-      { root: document.getElementById("terminal-scroll"), threshold: 0.05 },
-    );
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          observer?.disconnect();
 
-    observer.observe(section);
-    return () => observer.disconnect();
+          if (prefersReducedMotion) {
+            gsap.set(content, { opacity: 1, y: 0 });
+            gsap.set(statusLineRefs.current.filter(Boolean), {
+              opacity: 1,
+              x: 0,
+            });
+            gsap.set(cardsRef.current.filter(Boolean), { opacity: 1, y: 0 });
+            return;
+          }
+
+          const tl = gsap.timeline();
+          tl.to(content, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" });
+          tl.fromTo(
+            statusLineRefs.current.filter(Boolean),
+            { opacity: 0, x: -8 },
+            {
+              opacity: 1,
+              x: 0,
+              duration: 0.2,
+              stagger: 0.07,
+              ease: "power2.out",
+            },
+            "-=0.2",
+          );
+          tl.fromTo(
+            cardsRef.current.filter(Boolean),
+            { opacity: 0, y: 16 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.35,
+              stagger: 0.1,
+              ease: "power2.out",
+            },
+            "-=0.3",
+          );
+        },
+        { root: document.getElementById("terminal-scroll"), threshold: 0.05 },
+      );
+
+      observer.observe(section);
+    });
+
+    return () => observer?.disconnect();
   }, []);
 
   return (

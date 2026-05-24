@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 import type { PortfolioProject } from "@/types/portfolio";
 
 export default function Projects({
@@ -20,31 +20,34 @@ export default function Projects({
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        if (prefersReducedMotion) {
-          gsap.set(cards, { opacity: 1, y: 0, scale: 1 });
-          return;
-        }
-        gsap.fromTo(
-          cards,
-          { opacity: 0, y: 60, scale: 0.96 },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.65,
-            stagger: 0.2,
-            ease: "power3.out",
-          },
-        );
-      },
-      { root: document.getElementById("terminal-scroll"), threshold: 0.1 },
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
+    let observer: IntersectionObserver | undefined;
+    loadGsap().then((gsap) => {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          observer!.disconnect();
+          if (prefersReducedMotion) {
+            gsap.set(cards, { opacity: 1, y: 0, scale: 1 });
+            return;
+          }
+          gsap.fromTo(
+            cards,
+            { opacity: 0, y: 60, scale: 0.96 },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.65,
+              stagger: 0.2,
+              ease: "power3.out",
+            },
+          );
+        },
+        { root: document.getElementById("terminal-scroll"), threshold: 0.1 },
+      );
+      observer.observe(section);
+    });
+    return () => observer?.disconnect();
   }, []);
 
   const rafRef = useRef<number | null>(null);
@@ -61,23 +64,28 @@ export default function Projects({
         ((clientY - rect.top - rect.height / 2) / (rect.height / 2)) * -6;
       const rotateY =
         ((clientX - rect.left - rect.width / 2) / (rect.width / 2)) * 6;
-      gsap.to(card, {
-        rotateX,
-        rotateY,
-        duration: 0.3,
-        ease: "power2.out",
-        transformPerspective: 800,
+      loadGsap().then((gsap) => {
+        gsap.to(card, {
+          rotateX,
+          rotateY,
+          duration: 0.3,
+          ease: "power2.out",
+          transformPerspective: 800,
+        });
       });
     });
   };
 
   const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    gsap.to(e.currentTarget, {
-      rotateX: 0,
-      rotateY: 0,
-      duration: 0.6,
-      ease: "elastic.out(1, 0.5)",
+    const card = e.currentTarget;
+    loadGsap().then((gsap) => {
+      gsap.to(card, {
+        rotateX: 0,
+        rotateY: 0,
+        duration: 0.6,
+        ease: "elastic.out(1, 0.5)",
+      });
     });
   };
 

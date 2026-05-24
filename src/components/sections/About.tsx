@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 import { hygraphImageUrl } from "@/lib/hygraph-image";
 import type { PortfolioAsset, PortfolioSiteSettings } from "@/types/portfolio";
 
@@ -23,16 +23,18 @@ function CountUp({
     if (!started || !numRef.current) return;
     const isDecimal = !Number.isInteger(target);
     const obj = { val: 0 };
-    gsap.to(obj, {
-      val: target,
-      duration: 2,
-      ease: "power2.out",
-      onUpdate: () => {
-        if (numRef.current)
-          numRef.current.textContent = isDecimal
-            ? obj.val.toFixed(1)
-            : Math.round(obj.val).toString();
-      },
+    loadGsap().then((gsap) => {
+      gsap.to(obj, {
+        val: target,
+        duration: 2,
+        ease: "power2.out",
+        onUpdate: () => {
+          if (numRef.current)
+            numRef.current.textContent = isDecimal
+              ? obj.val.toFixed(1)
+              : Math.round(obj.val).toString();
+        },
+      });
     });
   }, [started, target]);
 
@@ -94,74 +96,79 @@ export default function About({ site }: { site: PortfolioSiteSettings }) {
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    const photoEl = section.querySelector<HTMLElement>(".about-photo");
-    if (photoEl && !prefersReducedMotion) {
-      gsap.set(photoEl, { opacity: 0, x: 24 });
-    }
+    let observer: IntersectionObserver | undefined;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
+    loadGsap().then((gsap) => {
+      const photoEl = section.querySelector<HTMLElement>(".about-photo");
+      if (photoEl && !prefersReducedMotion) {
+        gsap.set(photoEl, { opacity: 0, x: 24 });
+      }
 
-        if (prefersReducedMotion) {
-          if (headingRef.current)
-            gsap.set(headingRef.current, { clipPath: "inset(0 0% 0 0)" });
-          if (paraRef.current) gsap.set(paraRef.current, { opacity: 1 });
-          if (photoEl) gsap.set(photoEl, { opacity: 1, x: 0 });
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          observer?.disconnect();
+
+          if (prefersReducedMotion) {
+            if (headingRef.current)
+              gsap.set(headingRef.current, { clipPath: "inset(0 0% 0 0)" });
+            if (paraRef.current) gsap.set(paraRef.current, { opacity: 1 });
+            if (photoEl) gsap.set(photoEl, { opacity: 1, x: 0 });
+            const cards = section.querySelectorAll<HTMLElement>(".stat-card");
+            gsap.set(cards, { opacity: 1 });
+            setStatsStarted(true);
+            return;
+          }
+
+          if (headingRef.current) {
+            gsap.fromTo(
+              headingRef.current,
+              { clipPath: "inset(0 100% 0 0)" },
+              {
+                clipPath: "inset(0 0% 0 0)",
+                duration: 0.9,
+                ease: "power3.inOut",
+              },
+            );
+          }
+          if (paraRef.current) {
+            gsap.fromTo(
+              paraRef.current,
+              { opacity: 0, y: 20 },
+              { opacity: 1, y: 0, duration: 0.7, ease: "power2.out", delay: 0.2 },
+            );
+          }
+          if (photoEl) {
+            gsap.set(photoEl, { opacity: 0, x: 24 });
+            gsap.to(photoEl, {
+              opacity: 1,
+              x: 0,
+              duration: 0.8,
+              ease: "power3.out",
+              delay: 0.15,
+            });
+          }
           const cards = section.querySelectorAll<HTMLElement>(".stat-card");
-          gsap.set(cards, { opacity: 1 });
-          setStatsStarted(true);
-          return;
-        }
-
-        if (headingRef.current) {
           gsap.fromTo(
-            headingRef.current,
-            { clipPath: "inset(0 100% 0 0)" },
+            cards,
+            { opacity: 0, y: 40, rotateX: 15 },
             {
-              clipPath: "inset(0 0% 0 0)",
-              duration: 0.9,
-              ease: "power3.inOut",
+              opacity: 1,
+              y: 0,
+              rotateX: 0,
+              duration: 0.6,
+              stagger: 0.15,
+              ease: "power3.out",
+              onComplete: () => setStatsStarted(true),
             },
           );
-        }
-        if (paraRef.current) {
-          gsap.fromTo(
-            paraRef.current,
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.7, ease: "power2.out", delay: 0.2 },
-          );
-        }
-        if (photoEl) {
-          gsap.set(photoEl, { opacity: 0, x: 24 });
-          gsap.to(photoEl, {
-            opacity: 1,
-            x: 0,
-            duration: 0.8,
-            ease: "power3.out",
-            delay: 0.15,
-          });
-        }
-        const cards = section.querySelectorAll<HTMLElement>(".stat-card");
-        gsap.fromTo(
-          cards,
-          { opacity: 0, y: 40, rotateX: 15 },
-          {
-            opacity: 1,
-            y: 0,
-            rotateX: 0,
-            duration: 0.6,
-            stagger: 0.15,
-            ease: "power3.out",
-            onComplete: () => setStatsStarted(true),
-          },
-        );
-      },
-      { root: document.getElementById("terminal-scroll"), threshold: 0.1 },
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
+        },
+        { root: document.getElementById("terminal-scroll"), threshold: 0.1 },
+      );
+      observer.observe(section);
+    });
+
+    return () => observer?.disconnect();
   }, []);
 
   return (

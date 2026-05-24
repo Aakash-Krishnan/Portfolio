@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 import type { PortfolioExperience } from "@/types/portfolio";
 
 function CommitDetail({
@@ -18,34 +18,36 @@ function CommitDetail({
     const el = ref.current;
     if (!el) return;
 
-    if (isOpen) {
-      const height = el.scrollHeight;
-      gsap.fromTo(
-        el,
-        { height: 0, opacity: 0 },
-        {
-          height,
-          opacity: 1,
-          duration: 0.4,
-          ease: "power3.out",
-          onComplete: () => gsap.set(el, { height: "auto" }),
-        },
-      );
-      gsap.fromTo(
-        linesRef.current.filter(Boolean),
-        { opacity: 0, x: -8 },
-        {
-          opacity: 1,
-          x: 0,
-          duration: 0.25,
-          stagger: 0.06,
-          ease: "power2.out",
-          delay: 0.15,
-        },
-      );
-    } else {
-      gsap.to(el, { height: 0, opacity: 0, duration: 0.3, ease: "power2.in" });
-    }
+    loadGsap().then((gsap) => {
+      if (isOpen) {
+        const height = el.scrollHeight;
+        gsap.fromTo(
+          el,
+          { height: 0, opacity: 0 },
+          {
+            height,
+            opacity: 1,
+            duration: 0.4,
+            ease: "power3.out",
+            onComplete: () => gsap.set(el, { height: "auto" }),
+          },
+        );
+        gsap.fromTo(
+          linesRef.current.filter(Boolean),
+          { opacity: 0, x: -8 },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.25,
+            stagger: 0.06,
+            ease: "power2.out",
+            delay: 0.15,
+          },
+        );
+      } else {
+        gsap.to(el, { height: 0, opacity: 0, duration: 0.3, ease: "power2.in" });
+      }
+    });
   }, [isOpen]);
 
   const lines = [
@@ -100,39 +102,42 @@ export default function Experience({
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
-    if (lineRef.current)
-      gsap.set(lineRef.current, { scaleY: 0, transformOrigin: "top center" });
+    let observer: IntersectionObserver | undefined;
+    loadGsap().then((gsap) => {
+      if (lineRef.current)
+        gsap.set(lineRef.current, { scaleY: 0, transformOrigin: "top center" });
 
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        if (prefersReducedMotion) {
-          gsap.set(lineRef.current, { scaleY: 1 });
-          gsap.set(entriesRef.current.filter(Boolean), { opacity: 1, x: 0 });
-          return;
-        }
-        const tl = gsap.timeline();
-        tl.to(lineRef.current, {
-          scaleY: 1,
-          duration: 0.7,
-          ease: "power2.out",
-        });
-        tl.fromTo(
-          entriesRef.current.filter(Boolean),
-          { opacity: 0, x: -28 },
-          { opacity: 1, x: 0, duration: 0.5, stagger: 0.2, ease: "power2.out" },
-          "-=0.4",
-        );
-      },
-      { root: document.getElementById("terminal-scroll"), threshold: 0.15 },
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          observer!.disconnect();
+          if (prefersReducedMotion) {
+            gsap.set(lineRef.current, { scaleY: 1 });
+            gsap.set(entriesRef.current.filter(Boolean), { opacity: 1, x: 0 });
+            return;
+          }
+          const tl = gsap.timeline();
+          tl.to(lineRef.current, {
+            scaleY: 1,
+            duration: 0.7,
+            ease: "power2.out",
+          });
+          tl.fromTo(
+            entriesRef.current.filter(Boolean),
+            { opacity: 0, x: -28 },
+            { opacity: 1, x: 0, duration: 0.5, stagger: 0.2, ease: "power2.out" },
+            "-=0.4",
+          );
+        },
+        { root: document.getElementById("terminal-scroll"), threshold: 0.15 },
+      );
+      observer.observe(section);
+    });
+    return () => observer?.disconnect();
   }, []);
 
   const copyHash = (hash: string) => {

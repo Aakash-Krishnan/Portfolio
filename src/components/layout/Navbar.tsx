@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 
 const NAV_LINKS = [
   { label: "Work", href: "#experience" },
@@ -27,11 +27,13 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    gsap.fromTo(
-      navRef.current,
-      { y: -60, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", delay: 0.3 }
-    );
+    loadGsap().then((gsap) => {
+      gsap.fromTo(
+        navRef.current,
+        { y: -60, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "power2.out", delay: 0.3 }
+      );
+    });
   }, []);
 
   useEffect(() => {

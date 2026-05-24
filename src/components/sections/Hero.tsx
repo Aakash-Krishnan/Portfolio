@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 import type { ResumeLink } from "@/lib/resume";
 import type { PortfolioSiteSettings } from "@/types/portfolio";
 
@@ -32,28 +32,31 @@ export default function Hero({
       return;
     }
 
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 0.15 });
-      tl.fromTo(
-        ".hero-line",
-        { opacity: 0, y: 32 },
-        { opacity: 1, y: 0, duration: 0.55, stagger: 0.12, ease: "power3.out" },
-      );
-      tl.fromTo(
-        ctaRef.current,
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
-        "-=0.2",
-      );
-      tl.fromTo(
-        statsRef.current,
-        { opacity: 0, y: 16 },
-        { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
-        "-=0.2",
-      );
+    let ctx: { revert: () => void } | undefined;
+    loadGsap().then((gsap) => {
+      ctx = gsap.context(() => {
+        const tl = gsap.timeline({ delay: 0.15 });
+        tl.fromTo(
+          ".hero-line",
+          { opacity: 0, y: 32 },
+          { opacity: 1, y: 0, duration: 0.55, stagger: 0.12, ease: "power3.out" },
+        );
+        tl.fromTo(
+          ctaRef.current,
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
+          "-=0.2",
+        );
+        tl.fromTo(
+          statsRef.current,
+          { opacity: 0, y: 16 },
+          { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" },
+          "-=0.2",
+        );
+      });
     });
 
-    return () => ctx.revert();
+    return () => ctx?.revert();
   }, []);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 import type {
   PortfolioSiteSettings,
   PortfolioSkillCategory,
@@ -129,28 +129,31 @@ export default function Skills({
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    if (!prefersReducedMotion) gsap.set(els, { opacity: 0, x: -10 });
+    let observer: IntersectionObserver | undefined;
+    loadGsap().then((gsap) => {
+      if (!prefersReducedMotion) gsap.set(els, { opacity: 0, x: -10 });
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        if (prefersReducedMotion) {
-          gsap.set(els, { opacity: 1, x: 0 });
-          return;
-        }
-        gsap.to(els, {
-          opacity: 1,
-          x: 0,
-          duration: 0.18,
-          stagger: 0.022,
-          ease: "power2.out",
-        });
-      },
-      { root: document.getElementById("terminal-scroll"), threshold: 0.08 },
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          observer!.disconnect();
+          if (prefersReducedMotion) {
+            gsap.set(els, { opacity: 1, x: 0 });
+            return;
+          }
+          gsap.to(els, {
+            opacity: 1,
+            x: 0,
+            duration: 0.18,
+            stagger: 0.022,
+            ease: "power2.out",
+          });
+        },
+        { root: document.getElementById("terminal-scroll"), threshold: 0.08 },
+      );
+      observer.observe(section);
+    });
+    return () => observer?.disconnect();
   }, [LINES]);
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
@@ -12,42 +12,47 @@ export default function CustomCursor() {
     const ring = ringRef.current;
     if (!dot || !ring) return;
 
-    // quickTo for ultra-smooth cursor lag
-    const moveDot = gsap.quickTo(dot, "css", { duration: 0.1, ease: "none" });
-    const moveRingX = gsap.quickTo(ring, "x", { duration: 0.5, ease: "power3.out" });
-    const moveRingY = gsap.quickTo(ring, "y", { duration: 0.5, ease: "power3.out" });
+    let cleanup: (() => void) | undefined;
 
-    const onMove = (e: MouseEvent) => {
-      gsap.set(dot, { x: e.clientX, y: e.clientY });
-      moveRingX(e.clientX);
-      moveRingY(e.clientY);
-    };
+    loadGsap().then((gsap) => {
+      const moveDot = gsap.quickTo(dot, "css", { duration: 0.1, ease: "none" });
+      const moveRingX = gsap.quickTo(ring, "x", { duration: 0.5, ease: "power3.out" });
+      const moveRingY = gsap.quickTo(ring, "y", { duration: 0.5, ease: "power3.out" });
 
-    const onEnterLink = () => {
-      gsap.to(ring, { scale: 1.8, borderColor: "var(--color-primary)", duration: 0.25, ease: "power2.out" });
-      gsap.to(dot, { scale: 0, duration: 0.2 });
-    };
+      const onMove = (e: MouseEvent) => {
+        gsap.set(dot, { x: e.clientX, y: e.clientY });
+        moveRingX(e.clientX);
+        moveRingY(e.clientY);
+      };
 
-    const onLeaveLink = () => {
-      gsap.to(ring, { scale: 1, borderColor: "rgba(34,197,94,0.5)", duration: 0.35, ease: "elastic.out(1,0.5)" });
-      gsap.to(dot, { scale: 1, duration: 0.2 });
-    };
+      const onEnterLink = () => {
+        gsap.to(ring, { scale: 1.8, borderColor: "var(--color-primary)", duration: 0.25, ease: "power2.out" });
+        gsap.to(dot, { scale: 0, duration: 0.2 });
+      };
 
-    document.addEventListener("mousemove", onMove);
+      const onLeaveLink = () => {
+        gsap.to(ring, { scale: 1, borderColor: "rgba(34,197,94,0.5)", duration: 0.35, ease: "elastic.out(1,0.5)" });
+        gsap.to(dot, { scale: 1, duration: 0.2 });
+      };
 
-    const interactives = document.querySelectorAll("a, button, [data-magnetic]");
-    interactives.forEach((el) => {
-      el.addEventListener("mouseenter", onEnterLink);
-      el.addEventListener("mouseleave", onLeaveLink);
+      document.addEventListener("mousemove", onMove);
+
+      const interactives = document.querySelectorAll("a, button, [data-magnetic]");
+      interactives.forEach((el) => {
+        el.addEventListener("mouseenter", onEnterLink);
+        el.addEventListener("mouseleave", onLeaveLink);
+      });
+
+      cleanup = () => {
+        document.removeEventListener("mousemove", onMove);
+        interactives.forEach((el) => {
+          el.removeEventListener("mouseenter", onEnterLink);
+          el.removeEventListener("mouseleave", onLeaveLink);
+        });
+      };
     });
 
-    return () => {
-      document.removeEventListener("mousemove", onMove);
-      interactives.forEach((el) => {
-        el.removeEventListener("mouseenter", onEnterLink);
-        el.removeEventListener("mouseleave", onLeaveLink);
-      });
-    };
+    return () => cleanup?.();
   }, []);
 
   return (

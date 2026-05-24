@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
+import { loadGsap } from "@/lib/gsap";
 import AchievementCertificateCarousel from "@/components/achievements/AchievementCertificateCarousel";
 import AchievementPlacementBadge from "@/components/achievements/AchievementPlacementBadge";
 import {
@@ -83,21 +83,23 @@ export default function Achievements({
       ([entry]) => {
         if (!entry.isIntersecting) return;
         observer.disconnect();
-        if (prefersReducedMotion) {
-          gsap.set(cards, { opacity: 1, y: 0 });
-          return;
-        }
-        gsap.fromTo(
-          cards,
-          { opacity: 0, y: 28 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.55,
-            stagger: 0.12,
-            ease: "power3.out",
-          },
-        );
+        loadGsap().then((gsap) => {
+          if (prefersReducedMotion) {
+            gsap.set(cards, { opacity: 1, y: 0 });
+            return;
+          }
+          gsap.fromTo(
+            cards,
+            { opacity: 0, y: 28 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.55,
+              stagger: 0.12,
+              ease: "power3.out",
+            },
+          );
+        });
       },
       { root: document.getElementById("terminal-scroll"), threshold: 0.1 },
     );

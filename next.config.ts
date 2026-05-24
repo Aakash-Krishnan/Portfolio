@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
 // GTM requires unsafe-inline — nonce-based approach needs server-side tagging infra
+// React requires unsafe-eval in development for call stack reconstruction
 const cspHeader = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline' https://www.googletagmanager.com`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com`,
   `style-src 'self' 'unsafe-inline'`,
   // next/font/google downloads fonts at build time → served from self, no googleapis needed
   `font-src 'self'`,
