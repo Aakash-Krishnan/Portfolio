@@ -36,5 +36,8 @@ export function buildPortfolioMetadata(site: PortfolioSiteSettings): Metadata {
       title: site.twitterTitle,
       description: site.twitterDescription,
     },
+    verification: {
+      google: "F8qoVGDdSaAF6OHbbBSRyyGU_Zm1NY110znqt6ZEsCg",
+    },
   };
 }
