@@ -8,6 +8,7 @@ import Achievements from "@/components/sections/Achievements";
 import Contact from "@/components/sections/Contact";
 import { getPortfolioData } from "@/lib/portfolio";
 import { getResumeLink } from "@/lib/resume";
+import JsonLd from "@/components/meta/JsonLd";
 
 export default async function Home() {
   const portfolio = await getPortfolioData();
@@ -15,6 +16,7 @@ export default async function Home() {
 
   return (
     <TerminalWrapper navLinks={portfolio.site.navLinks} resume={resume}>
+      <JsonLd data={portfolio} />
       <main id="main-content">
         <Hero site={portfolio.site} resume={resume} />
         <About site={portfolio.site} />
